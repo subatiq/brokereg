@@ -32,7 +32,7 @@ def publish(topic: str, event: Event):
 
 
 conf = {**servers,
-        'group.id': "uberpopug",
+        'group.id': os.getenv("KAFKA_CONSUMER_GROUP", "default"),
         'auto.offset.reset': 'latest'}
 
 
