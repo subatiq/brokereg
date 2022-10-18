@@ -9,6 +9,7 @@ confluent-kafka = "*"
 pydantic = "*"
 python-dotenv = "*"
 boto3 = "*"
+jsonschema = "*"
 
 [dev-packages]
 

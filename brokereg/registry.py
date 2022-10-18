@@ -49,18 +49,25 @@ def write_raw(key: str, data: str):
 
 
 def build_key(domain: str, event_name: str, version: int) -> str:
-    return f"{domain}/{event_name}/v{version}"
+    return f"{domain}/{event_name}/v{version}.json"
 
 
 def update_event_schema(event: Event):
-    update_schema(event.event_domain, event.event_name, event.event_version, event.schema_json())
+    update_schema(event.domain, event.name, event.version, event.schema_json())
 
 
 def update_schema(domain: str, event_name: str, version: int, schema: str):
     s3_key = build_key(domain, event_name, version)
     existing = read(key=s3_key)
-    if existing == json.loads(schema):
+
+    schema_obj = json.loads(schema)
+    print(event_name, 'SCHEMA', schema_obj)
+
+    if existing == schema_obj:
         return
+
+    if existing and existing['version'] == schema_obj['version']:
+        raise ValueError(f"Version conflict in schemas for event: {schema_obj['name']}")
 
     write_raw(s3_key, schema)
 
@@ -68,3 +75,7 @@ def update_schema(domain: str, event_name: str, version: int, schema: str):
 def read_schema(domain: str, event_name: str, version: int) -> dict[str, Any] | None:
     s3_key = build_key(domain, event_name, version)
     return read(key=s3_key)
+
+
+def read_json_event_schema(event: dict[str, Any]) -> dict[str, Any] | None:
+    return read_schema(event.get('domain', ''), event.get('name', ''), event.get('version', 0))
